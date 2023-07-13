@@ -6,17 +6,65 @@ import {
   SafeAreaView,
   Image,
   TouchableOpacity,
+  Linking,
+  Modal,
 } from 'react-native';
+import {WebView} from 'react-native-webview';
 import Colors from '@utils/constants/Colors';
 import {transparentLogo} from '../utils/images/ImageAssets';
 import {googleLogo} from '../utils/images/ImageAssets';
 import {appleLogo} from '../utils/images/ImageAssets';
 import {emailImg} from '../utils/images/ImageAssets';
 import Zocial from 'react-native-vector-icons/Zocial';
+import BrowserHeader from '@components/BrowserHeader';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AuthLogin from '@components/AuthLogin';
 export type Props = {};
 
 const LandingScreen: React.FC<Props> = (Props: Props) => {
+  const [token, setToken] = useState<string>('');
+  const [showWebView, setShowWebView] = useState<boolean>(false);
+
+  // useEffect(() => {
+  //   // Add event listener for deep links
+  //   Linking.addEventListener('url', handleDeepLink);
+
+  //   // Clean up the event listener on component unmount
+  //   return () => {
+  //     Linking.removeEventListener('url', handleDeepLink);
+  //   };
+  // }, []);
+
+  const handleDeepLink = (event: {url: string}) => {
+    // Extract authentication information from the deep link URL
+    const {token} = Linking.parse(event.url).queryParams;
+
+    // TODO: Authenticate the user using the extracted token and navigate to the appropriate screen
+
+    // Update app state or dispatch an action to reflect the authentication status
+    // Navigate to the appropriate screen in your app
+    navigateToHomeScreen();
+  };
+
+  const onLoginPress = async () => {
+    const loginURL = 'http://localhost:3000/auth/login'; // Replace with your login URL
+    const supported = await Linking.canOpenURL(loginURL);
+
+    if (supported) {
+      await Linking.openURL(loginURL);
+    } else {
+      console.log('Cannot open URL');
+    }
+  };
+
+  const handleLoginPress = () => {
+    setShowWebView(true);
+  };
+
+  const handleCloseWebView = () => {
+    setShowWebView(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.imageWrapper}>
@@ -36,10 +84,17 @@ const LandingScreen: React.FC<Props> = (Props: Props) => {
           <Zocial name={'email'} size={18} color="white" />
           <Text style={styles.darkButtonTxt}>Continue with email</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.loginButton}>
+        <TouchableOpacity onPress={handleLoginPress} style={styles.loginButton}>
           <Text style={styles.loginButtonTxt}>Log in</Text>
         </TouchableOpacity>
       </View>
+      <Modal visible={showWebView} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <AuthLogin token={token} onClose={handleCloseWebView} />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -131,6 +186,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+
+  modalContainer: {
+    flex: 1,
+
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 0,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '90%',
   },
 });
 
