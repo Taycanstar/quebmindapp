@@ -59,9 +59,18 @@ const AuthLogin = ({token, onClose}) => {
         style={styles.webview}
         onLoad={handleWebViewLoad}
         onMessage={event => handleWebViewMessage(event)}
-        // injectedJavaScript={`
+        onNavigationStateChange={navState => {
+          // Check if the new URL is 'http://localhost:3000/platform/apps'
+          if (navState.url === 'http://localhost:3000/platform/apps') {
+            // Close the WebView and navigate to another screen
+            handleBrowserClose();
+          }
+        }}
+        //       injectedJavaScript={`
         //     window.postMessage(JSON.stringify({ token: '${token}' }));
-        //   `}
+        //   `
+
+        // }
       />
     </View>
   );
