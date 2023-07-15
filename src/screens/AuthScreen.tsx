@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   Image,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Linking,
   Modal,
 } from 'react-native';
@@ -19,30 +20,21 @@ import Zocial from 'react-native-vector-icons/Zocial';
 import BrowserHeader from '@components/BrowserHeader';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AuthLogin from '@components/AuthLogin';
+import AuthBrowser from '@components/AuthBrowser';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
+
+import LoginScreen from './LoginScreen';
+
 export type Props = {};
 
-const LandingScreen: React.FC<Props> = (Props: Props) => {
+const AuthScreen: React.FC<Props> = (Props: Props) => {
   const [token, setToken] = useState<string>('');
   const [showWebView, setShowWebView] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   // Add event listener for deep links
-  //   Linking.addEventListener('url', handleDeepLink);
-
-  //   // Clean up the event listener on component unmount
-  //   return () => {
-  //     Linking.removeEventListener('url', handleDeepLink);
-  //   };
-  // }, []);
-
+  const [isLoginVisible, setIsLoginVisible] = useState<boolean>(false);
   const handleDeepLink = (event: {url: string}) => {
     // Extract authentication information from the deep link URL
     const {token} = Linking.parse(event.url).queryParams;
 
-    // TODO: Authenticate the user using the extracted token and navigate to the appropriate screen
-
-    // Update app state or dispatch an action to reflect the authentication status
-    // Navigate to the appropriate screen in your app
     navigateToHomeScreen();
   };
 
@@ -57,12 +49,33 @@ const LandingScreen: React.FC<Props> = (Props: Props) => {
     }
   };
 
-  const handleLoginPress = () => {
-    setShowWebView(true);
-  };
+  // const handleLoginPress = () => {
+  //   setShowWebView(true);
+  // };
 
   const handleCloseWebView = () => {
     setShowWebView(false);
+  };
+
+  const handleLoginPress = async () => {
+    const loginURL = 'http://localhost:3000/auth/login'; // Replace with your login URL
+    if (await InAppBrowser.isAvailable()) {
+      await InAppBrowser.open(loginURL, {
+        // iOS Properties
+        dismissButtonStyle: 'cancel',
+        preferredBarTintColor: '#453AA4',
+        preferredControlTintColor: 'white',
+        // Android Properties
+        showTitle: true,
+        toolbarColor: '#6200EE',
+        secondaryToolbarColor: 'black',
+        enableUrlBarHiding: true,
+        enableDefaultShare: true,
+        forceCloseOnRedirection: false,
+      });
+    } else {
+      console.log('Cannot open InAppBrowser');
+    }
   };
 
   return (
@@ -84,17 +97,29 @@ const LandingScreen: React.FC<Props> = (Props: Props) => {
           <Zocial name={'email'} size={18} color="white" />
           <Text style={styles.darkButtonTxt}>Continue with email</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleLoginPress} style={styles.loginButton}>
+        <TouchableOpacity
+          onPress={() => setIsLoginVisible(true)}
+          style={styles.loginButton}>
           <Text style={styles.loginButtonTxt}>Log in</Text>
         </TouchableOpacity>
       </View>
-      <Modal visible={showWebView} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <AuthLogin token={token} onClose={handleCloseWebView} />
-          </View>
-        </View>
-      </Modal>
+
+      <TouchableWithoutFeedback onPress={() => setIsLoginVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isLoginVisible}
+          onRequestClose={() => setIsLoginVisible(false)}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => setIsLoginVisible(false)}
+            style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <LoginScreen />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
@@ -198,8 +223,10 @@ const styles = StyleSheet.create({
     padding: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: '90%',
+    height: '60%',
+    // flex: 1,
+    // width: '100%',
   },
 });
 
-export default LandingScreen;
+export default AuthScreen;

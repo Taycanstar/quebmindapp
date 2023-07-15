@@ -354,12 +354,8 @@ PODS:
     - react-native-config/App (= 1.5.1)
   - react-native-config/App (1.5.1):
     - React-Core
-  - react-native-safe-area-context (4.6.3):
-    - RCT-Folly
-    - RCTRequired
-    - RCTTypeSafety
+  - react-native-safe-area-context (4.7.1):
     - React-Core
-    - ReactCommon/turbomodule/core
   - react-native-webview (13.2.2):
     - React-Core
   - React-NativeModulesApple (0.72.0):
@@ -467,6 +463,10 @@ PODS:
     - React-jsi (= 0.72.0)
     - React-logger (= 0.72.0)
     - React-perflogger (= 0.72.0)
+  - RNCAsyncStorage (1.19.0):
+    - React-Core
+  - RNGestureHandler (2.12.0):
+    - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
   - RNReanimated (3.3.0):
@@ -496,7 +496,7 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.22.0):
+  - RNScreens (3.22.1):
     - React-Core
     - React-RCTImage
   - SocketRocket (0.6.0)
@@ -569,6 +569,8 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -675,6 +677,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
   RNInAppBrowser:
     :path: "../node_modules/react-native-inappbrowser-reborn"
   RNReanimated:
@@ -720,7 +726,7 @@ SPEC CHECKSUMS:
   React-logger: 454ffb01980778a43b0153ee98721d0275b56616
   react-native-app-auth: fd1eaa667c0bc014199456d14a6440cb74de814e
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
-  react-native-safe-area-context: 36cc67648134e89465663b8172336a19eeda493d
+  react-native-safe-area-context: 9697629f7b2cda43cf52169bb7e0767d330648c2
   react-native-webview: b8ec89966713985111a14d6e4bf98d8b54bced0d
   React-NativeModulesApple: 1d81d927ef1a67a3545a01e14c2e98500bf9b199
   React-perflogger: 684a11499a0589cc42135d6d5cc04d0e4e0e261a
@@ -739,9 +745,11 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 4a36521cc1ec1bc3997ae2462b6779dadaae376b
   React-utils: c12d2e75c8bbc727939ddc4319ed95493395ed5a
   ReactCommon: b9547f82aed45eccc1aa59034dc6c72809e37000
+  RNCAsyncStorage: 4b98ac3c64efa4e35c1197cb0c5ca5e9f5d4c666
+  RNGestureHandler: dec4645026e7401a0899f2846d864403478ff6a5
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNReanimated: 3ffa3d63576ecd26a4f8772d03029cccaf41b5d7
-  RNScreens: 68fd1060f57dd1023880bf4c05d74784b5392789
+  RNScreens: 50ffe2fa2342eabb2d0afbe19f7c1af286bc7fb3
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 1d6727ed193122f6adaf435c3de1a768326ff83b
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

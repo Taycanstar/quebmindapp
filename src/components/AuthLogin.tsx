@@ -2,11 +2,12 @@ import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, View, SafeAreaView, ActivityIndicator} from 'react-native';
 import BrowserHeader from './BrowserHeader';
 import {WebView} from 'react-native-webview';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthLogin = ({token, onClose}) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const webViewRef = useRef<WebView>(null);
-  const [receivedMessage, setReceivedMessage] = useState('');
+  const [receivedMessage, setReceivedMessage] = useState<string>('');
 
   const handleWebViewLoad = () => {
     setIsLoading(false);
@@ -15,29 +16,23 @@ const AuthLogin = ({token, onClose}) => {
     onClose();
   };
 
-  const handleWebViewMessage = event => {
-    const data = JSON.parse(event.nativeEvent.data);
-    console.log(data); // Process the message data as needed
-    // Rest of your logic...
+  const handleWebViewMessage = async event => {
+    console.log(event.nativeEvent.data);
+    const token = event.nativeEvent.data; // Assuming the data is the token
+    try {
+      await AsyncStorage.setItem('userToken', token);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  useEffect(() => {
-    // Add an event listener to receive messages from the WebView
-    // Note: The `onMessage` prop of WebView already adds an event listener
-    // So, you don't need to manually add/remove event listeners.
-
-    // Clean up the event listener on component unmount
-    return () => {
-      // No need to remove the event listener here since it's handled internally by the WebView component.
-    };
-  }, []);
-  console.log(receivedMessage, 'msg');
   return (
     <View style={styles.container}>
       <BrowserHeader onClose={handleBrowserClose} />
 
       <WebView
         ref={webViewRef}
+        cacheEnabled={false}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
@@ -57,20 +52,23 @@ const AuthLogin = ({token, onClose}) => {
         }}
         source={{uri: 'http://localhost:3000/auth/login'}}
         style={styles.webview}
+        onLoadStart={event => {
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        }}
         onLoad={handleWebViewLoad}
-        onMessage={event => handleWebViewMessage(event)}
+        onMessage={handleWebViewMessage}
         onNavigationStateChange={navState => {
           // Check if the new URL is 'http://localhost:3000/platform/apps'
-          if (navState.url === 'http://localhost:3000/platform/apps') {
-            // Close the WebView and navigate to another screen
-            handleBrowserClose();
-          }
-        }}
-        //       injectedJavaScript={`
-        //     window.postMessage(JSON.stringify({ token: '${token}' }));
-        //   `
 
-        // }
+          setTimeout(() => {
+            if (navState.url === 'http://localhost:3000/platform/apps') {
+              // Close the WebView and navigate to another screen
+              handleBrowserClose();
+            }
+          }, 2000);
+        }}
       />
     </View>
   );
@@ -80,19 +78,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
+    height: '100%',
     overflow: 'hidden',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    overflow: 'hidden',
+    opacity: 0.99,
   },
   webview: {
     flex: 1,
     width: '100%',
     padding: 16,
+    height: '100%',
+    overflow: 'hidden',
+    opacity: 0.99,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
 });
 

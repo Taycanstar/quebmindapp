@@ -4,4 +4,6 @@ export default {
   navy2: '#213363',
   darkGrayBg: 'rgba(33,33,35,1)',
   darkGrayBg2: '#373837',
+  metagray: '#eff2f5',
+  darkInputBg: 'rgba(40,40,40,1)',
 };
