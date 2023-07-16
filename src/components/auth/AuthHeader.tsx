@@ -1,12 +1,16 @@
 import {View, Text, StyleSheet} from 'react-native';
 import React from 'react';
 
-type Props = {};
+type Props = {
+  textColor?: string;
+  bgColor?: string;
+  text?: string;
+};
 
-const AuthHeader = (props: Props) => {
+const AuthHeader: React.FC<Props> = ({textColor, bgColor, text}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Log in with your Qubemind Account</Text>
+    <View style={[styles.container, {backgroundColor: bgColor}]}>
+      <Text style={[styles.text, {color: textColor}]}>{text}</Text>
     </View>
   );
 };
@@ -15,8 +19,6 @@ export default AuthHeader;
 
 const styles = StyleSheet.create({
   container: {
-    // justifyContent: 'center',
-    backgroundColor: 'black',
     alignItems: 'center',
     marginBottom: 15,
   },
@@ -25,7 +27,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
     padding: 20,
-    color: 'white',
+
     textAlign: 'center',
   },
 });

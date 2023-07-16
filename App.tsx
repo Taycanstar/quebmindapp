@@ -5,6 +5,8 @@ import AppNavigator from '@navigation/AppNavigator';
 import {EventRegister} from 'react-native-event-listeners';
 import themeContext from '@utils/config/themeContext';
 import theme from '@utils/config/theme';
+import {Provider} from 'react-redux';
+import {store} from './src/store';
 
 function App(): JSX.Element {
   const [mode, setMode] = useState(false);
@@ -19,9 +21,11 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <themeContext.Provider value={mode === true ? theme.dark : theme.light}>
-      <AppNavigator />
-    </themeContext.Provider>
+    <Provider store={store}>
+      <themeContext.Provider value={mode === true ? theme.dark : theme.light}>
+        <AppNavigator />
+      </themeContext.Provider>
+    </Provider>
   );
 }
 

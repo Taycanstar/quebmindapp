@@ -4,7 +4,11 @@ import BrowserHeader from './BrowserHeader';
 import {WebView} from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AuthLogin = ({token, onClose}) => {
+type Props = {
+  onClose: () => void;
+};
+
+const AuthLogin: React.FC<Props> = ({onClose}) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const webViewRef = useRef<WebView>(null);
   const [receivedMessage, setReceivedMessage] = useState<string>('');
@@ -16,7 +20,7 @@ const AuthLogin = ({token, onClose}) => {
     onClose();
   };
 
-  const handleWebViewMessage = async event => {
+  const handleWebViewMessage = async (event: {nativeEvent: {data: any}}) => {
     console.log(event.nativeEvent.data);
     const token = event.nativeEvent.data; // Assuming the data is the token
     try {
@@ -28,7 +32,7 @@ const AuthLogin = ({token, onClose}) => {
 
   return (
     <View style={styles.container}>
-      <BrowserHeader onClose={handleBrowserClose} />
+      {/* <BrowserHeader onClose={handleBrowserClose} /> */}
 
       <WebView
         ref={webViewRef}
@@ -82,7 +86,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    overflow: 'hidden',
+
     opacity: 0.99,
   },
   webview: {

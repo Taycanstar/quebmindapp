@@ -4,9 +4,11 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AuthScreen from '../screens/AuthScreen';
-import LoginScreen from '../screens/LoginScreen';
+import AuthScreen from '../screens/auth/AuthScreen';
+import AddPersonalDetailsScreen from '../screens/auth/AddPersonalDetailsScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import {useSelector} from 'react-redux';
 
 export type Props = {};
 
@@ -30,29 +32,18 @@ const MainTab = () => (
 );
 
 const MainStack = () => (
-  <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+  // <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+  <Drawer.Navigator>
     <Drawer.Screen name="MainTab" component={MainTab} />
     {/* Add more screens in your main stack if needed */}
   </Drawer.Navigator>
 );
 
 const AppNavigator: React.FC<Props> = (Props: Props) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const checkToken = async () => {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token !== null) {
-        setIsLoggedIn(true);
-      }
-    };
-
-    checkToken();
-  }, []);
-
+  const userStatus = useSelector((state: any) => state.user.status);
   return (
     <NavigationContainer>
-      {isLoggedIn ? <MainStack /> : <AuthStack />}
+      {userStatus === 'loggedIn' ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };

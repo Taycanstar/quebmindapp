@@ -7,17 +7,15 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  secureTextEntry?: boolean;
   textColor: string;
   bgColor: string;
   placeholderTextColor: string;
 };
 
-const CustomInput = ({
+const CustomInput: React.FC<Props> = ({
   value,
   onChange,
   placeholder,
-  secureTextEntry,
   textColor,
   bgColor,
   placeholderTextColor,

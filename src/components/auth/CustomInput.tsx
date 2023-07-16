@@ -4,20 +4,26 @@ import Colors from '@utils/constants/Colors';
 
 type Props = {
   value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
   placeholderTextColor: string;
   textColor: string;
   bgColor: string;
+  editable?: boolean;
+  keyboardType?: string;
+  maxLength?: number;
 };
 
-const CustomInput = ({
+const CustomInput: React.FC<Props> = ({
   value,
   onChange,
   placeholder,
   textColor,
   bgColor,
   placeholderTextColor,
+  editable,
+  keyboardType,
+  maxLength,
 }) => {
   return (
     <View style={[styles.container, {backgroundColor: bgColor}]}>

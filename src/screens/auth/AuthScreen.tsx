@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,73 +10,23 @@ import {
   Linking,
   Modal,
 } from 'react-native';
-import {WebView} from 'react-native-webview';
 import Colors from '@utils/constants/Colors';
-import {transparentLogo} from '../utils/images/ImageAssets';
-import {googleLogo} from '../utils/images/ImageAssets';
-import {appleLogo} from '../utils/images/ImageAssets';
-import {emailImg} from '../utils/images/ImageAssets';
+import {transparentLogo} from '../../utils/images/ImageAssets';
+import {googleLogo} from '../../utils/images/ImageAssets';
 import Zocial from 'react-native-vector-icons/Zocial';
-import BrowserHeader from '@components/BrowserHeader';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AuthLogin from '@components/AuthLogin';
-import AuthBrowser from '@components/AuthBrowser';
-import InAppBrowser from 'react-native-inappbrowser-reborn';
-
 import LoginScreen from './LoginScreen';
+import AddPersonalDetailsScreen from './AddPersonalDetailsScreen';
+import VerifyPhScreen from './VerifyPhScreen';
+import EnterCodeScreen from './EnterCodeScreen';
 
 export type Props = {};
 
 const AuthScreen: React.FC<Props> = (Props: Props) => {
-  const [token, setToken] = useState<string>('');
-  const [showWebView, setShowWebView] = useState<boolean>(false);
   const [isLoginVisible, setIsLoginVisible] = useState<boolean>(false);
-  const handleDeepLink = (event: {url: string}) => {
-    // Extract authentication information from the deep link URL
-    const {token} = Linking.parse(event.url).queryParams;
-
-    navigateToHomeScreen();
-  };
-
-  const onLoginPress = async () => {
-    const loginURL = 'http://localhost:3000/auth/login'; // Replace with your login URL
-    const supported = await Linking.canOpenURL(loginURL);
-
-    if (supported) {
-      await Linking.openURL(loginURL);
-    } else {
-      console.log('Cannot open URL');
-    }
-  };
-
-  // const handleLoginPress = () => {
-  //   setShowWebView(true);
-  // };
-
-  const handleCloseWebView = () => {
-    setShowWebView(false);
-  };
-
-  const handleLoginPress = async () => {
-    const loginURL = 'http://localhost:3000/auth/login'; // Replace with your login URL
-    if (await InAppBrowser.isAvailable()) {
-      await InAppBrowser.open(loginURL, {
-        // iOS Properties
-        dismissButtonStyle: 'cancel',
-        preferredBarTintColor: '#453AA4',
-        preferredControlTintColor: 'white',
-        // Android Properties
-        showTitle: true,
-        toolbarColor: '#6200EE',
-        secondaryToolbarColor: 'black',
-        enableUrlBarHiding: true,
-        enableDefaultShare: true,
-        forceCloseOnRedirection: false,
-      });
-    } else {
-      console.log('Cannot open InAppBrowser');
-    }
-  };
+  const [isPdVisible, setIsPdVisible] = useState<boolean>(false);
+  const [isPhVisible, setIsPhVisible] = useState<boolean>(false);
+  const [isCodeVisible, setIsCodeVisible] = useState<boolean>(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -112,10 +62,63 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
           onRequestClose={() => setIsLoginVisible(false)}>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => setIsLoginVisible(false)}
+            // onPress={() => setIsLoginVisible(false)}
             style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <LoginScreen />
+              <LoginScreen onPress={() => setIsLoginVisible(false)} />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+
+      <TouchableWithoutFeedback onPress={() => setIsPdVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isPdVisible}
+          onRequestClose={() => setIsPdVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <AddPersonalDetailsScreen
+                onBackPress={() => setIsPdVisible(false)}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setIsPhVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isPhVisible}
+          onRequestClose={() => setIsPhVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <VerifyPhScreen
+                bgColor="black"
+                textColor="white"
+                inputBgColor={Colors.darkInputBg}
+                onBackPress={() => setIsPhVisible(false)}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+
+      <TouchableWithoutFeedback onPress={() => setIsCodeVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isCodeVisible}
+          onRequestClose={() => setIsCodeVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <EnterCodeScreen
+                bgColor="black"
+                textColor="white"
+                inputBgColor={Colors.darkInputBg}
+                onBackPress={() => setIsCodeVisible(false)}
+              />
             </View>
           </TouchableOpacity>
         </Modal>
@@ -197,7 +200,6 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: 'black',
-    alignItems: 'center',
     flexDirection: 'row',
     width: '100%',
     alignItems: 'center',

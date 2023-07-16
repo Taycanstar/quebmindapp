@@ -12,18 +12,23 @@ type Props = {
   textColor: string;
   bgColor: string;
   value: string;
+  onPress: () => void;
 };
 
-const CustomButton = ({textColor, bgColor, value}) => {
-  const onLoginPress = () => {};
+const CustomButton: React.FC<Props> = ({
+  textColor,
+  bgColor,
+  value,
+  onPress,
+}) => {
   return (
     <TouchableOpacity
-      onPress={onLoginPress}
+      onPress={onPress}
       style={[styles.container, {backgroundColor: bgColor}]}>
       <Text
         style={{
           fontSize: 18,
-          fontWeight: 600,
+          fontWeight: '600',
           color: textColor,
           textAlign: 'center',
         }}>
