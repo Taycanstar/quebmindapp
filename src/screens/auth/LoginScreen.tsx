@@ -9,10 +9,11 @@ import React, {useState, useEffect} from 'react';
 import AuthHeader from '@components/auth/AuthHeader';
 import CustomInput from '@components/auth/CustomInput';
 import CustomButton from '@components/auth/CustomButton';
+import ErrorText from '@components/ErrorText';
 import LoadingButton from '@components/LoadingButton';
 import CustomPasswordInput from '@components/auth/CustomPasswordInput';
 import Colors from '@utils/constants/Colors';
-import {loginUser, fetchUserByValue} from '../../store/user';
+import {loginUser, fetchUserByValue, fakeLoginUser} from '../../store/user';
 import {useDispatch, useSelector} from 'react-redux';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnyAction} from '@reduxjs/toolkit';
@@ -70,46 +71,112 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
     setVal(value);
   };
 
-  const fetchUserAndLogin = async () => {
-    try {
-      setIsLoading(true);
-      const response = await dispatch(fetchUserByValue(val));
-      if ('error' in response) {
-        setErrorText((response.payload as {message: string}).message);
-        console.error(
-          `Error on Screen`,
-          (response.payload as {message: string}).message,
-        );
-        setIsLoading(false);
-      } else if (response.payload) {
-        const user = response.payload;
-        // setTimeout(() => {
-        //   setIsLoading(false);
-        // }, 500);
-        if (user.registrationStep === 'phoneNumberVerified') {
-          if (loginType === 'email') {
-            await dispatch(loginUser({email: val.toLowerCase(), password}));
-          } else {
-            await dispatch(loginUser({username: val.toLowerCase(), password}));
-          }
-          onLoginSuccess(user);
-        } else if (user.registrationStep === 'emailVerified') {
-          onLoginSuccess(user);
-        } else if (user.registrationStep === 'personalInfoVerified') {
-          onLoginSuccess(user);
-        }
-      }
-    } catch (error: any) {
-      console.error(`Error on Screen`, error.message);
+  // const fetchUserAndLogin = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const response = await dispatch(fetchUserByValue(val));
+  //     if ('error' in response) {
+  //       setError(true);
+  //       setErrorText((response.payload as {message: string}).message);
+  //       setTimeout(() => {
+  //         setError(false);
+  //       }, 4000);
+  //       console.log(
+  //         `Error on Screen`,
+  //         (response.payload as {message: string}).message,
+  //       );
+  //       setIsLoading(false);
+  //     } else if (response.payload) {
+  //       const user = response.payload;
+  //       // const isMatch = await BcryptReactNative.compareSync(
+  //       //   password,
+  //       //   user.password,
+  //       // );
+  //       const isMatch = true;
+  //       console.log(isMatch, 'match');
+  //       if (!isMatch) {
+  //         setError(true);
+  //         setErrorText('Incorrect password');
+  //         setTimeout(() => {
+  //           setError(false);
+  //         }, 4000);
+  //         setTimeout(() => {
+  //           setIsLoading(false);
+  //         }, 500);
+  //       } else {
+  //         if (user.registrationStep === 'phoneNumberVerified') {
+  //           if (loginType === 'email') {
+  //             await dispatch(loginUser({email: val.toLowerCase(), password}));
+  //           } else {
+  //             await dispatch(
+  //               loginUser({username: val.toLowerCase(), password}),
+  //             );
+  //           }
+  //           onLoginSuccess(user);
+  //         } else if (user.registrationStep === 'emailVerified') {
+  //           onLoginSuccess(user);
+  //         } else if (user.registrationStep === 'personalInfoVerified') {
+  //           onLoginSuccess(user);
+  //         }
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     setTimeout(() => {
+  //       setIsLoading(false);
+  //     }, 500);
+  //   }
+  // };
+
+  // const onLogin = () => {
+  //   fetchUserAndLogin();
+  // };
+
+  const handleLogin = async () => {
+    setIsLoading(true);
+    let action;
+    if (loginType === 'email') {
+      action = await dispatch(
+        fakeLoginUser({email: val.toLowerCase(), password}),
+      );
+    } else {
+      action = await dispatch(
+        fakeLoginUser({username: val.toLowerCase(), password}),
+      );
+    }
+
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    if ('error' in action) {
+      setError(true);
+      setErrorText((action.payload as {message: string}).message);
       setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+        setError(false);
+      }, 4000);
+      console.log(
+        `Error on Screen`,
+        (action.payload as {message: string}).message,
+      );
+    } else {
+      const user = action.payload.user;
+      console.log(user.registrationStep, '<== user');
+
+      if (user.registrationStep === 'phoneNumberVerified') {
+        if (loginType === 'email') {
+          await dispatch(loginUser({email: val.toLowerCase(), password}));
+        } else {
+          await dispatch(loginUser({username: val.toLowerCase(), password}));
+        }
+        onLoginSuccess(user);
+      } else if (user.registrationStep === 'emailVerified') {
+        onLoginSuccess(user);
+      } else if (user.registrationStep === 'personalInfoVerified') {
+        onLoginSuccess(user);
+      }
     }
   };
 
-  const onLogin = () => {
-    fetchUserAndLogin();
-  };
   return (
     <View style={styles.wrapper}>
       <AntDesign size={20} name={'arrowleft'} color="white" onPress={onPress} />
@@ -136,6 +203,8 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
           value={password}
           onChange={(newText: string) => setPassword(newText)}
         />
+        {error && <ErrorText text={errorText} />}
+
         <TouchableOpacity onPress={onForgotPress}>
           <Text
             style={{
@@ -152,7 +221,7 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
           <LoadingButton />
         ) : (
           <CustomButton
-            onPress={onLogin}
+            onPress={handleLogin}
             textColor="white"
             bgColor={Colors.navy2}
             value="Log in"

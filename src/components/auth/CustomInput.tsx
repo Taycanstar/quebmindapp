@@ -1,6 +1,5 @@
 import {View, Text, StyleSheet, TextInput} from 'react-native';
 import React from 'react';
-import Colors from '@utils/constants/Colors';
 
 type Props = {
   value: string;

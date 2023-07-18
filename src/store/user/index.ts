@@ -41,7 +41,33 @@ export const loginUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.log(error);
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
+    }
+  },
+);
+
+export const fakeLoginUser = createAsyncThunk(
+  'user/fakeLogin',
+  async (
+    userData: {
+      email?: string;
+      username?: string;
+      password: string;
+      registrationToken?: string;
+    },
+    {rejectWithValue},
+  ) => {
+    try {
+      const response = await api.post(`/u/fake-login`, userData);
+
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
@@ -98,53 +124,65 @@ export const fetchUserByValue = createAsyncThunk(
 
 export const confirmUser = createAsyncThunk(
   'user/confirmUser',
-  async (data: {
-    confirmationToken: string;
-    email: string;
-    hashedPassword: string;
-  }) => {
+  async (
+    data: {
+      confirmationToken: string;
+      email: string;
+      hashedPassword: string;
+    },
+    {rejectWithValue},
+  ) => {
     try {
       const response = await api.post('/u/confirm-user', data);
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const checkUserExists = createAsyncThunk(
   'user/checkUserExists',
-  async (email: string) => {
+  async (email: string, {rejectWithValue}) => {
     try {
       const response = await api.get(`/u/check-user-exists?email=${email}`);
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const resendConfirmation = createAsyncThunk(
   'user/resendConfirmation',
-  async (email: string) => {
+  async (email: string, {rejectWithValue}) => {
     try {
       const response = await api.post('/u/resend-confirmation', {email});
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const addPersonalInfo = createAsyncThunk(
   'user/addPersonalInfo',
-  async (userData: {
-    id?: string;
-    firstName?: string;
-    lastName?: string;
-    birthday?: string;
-    organizationName?: string;
-  }) => {
+  async (
+    userData: {
+      id?: string;
+      firstName?: string;
+      lastName?: string;
+      birthday?: string;
+      organizationName?: string;
+    },
+    {rejectWithValue},
+  ) => {
     try {
       const response = await api.put(
         `/u/add-personal-info/${userData.id}`,
@@ -152,26 +190,33 @@ export const addPersonalInfo = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const sendCode = createAsyncThunk(
   'user/sendCode',
-  async (phoneNumber: string) => {
+  async (phoneNumber: string, {rejectWithValue}) => {
     try {
       const response = await api.post('/u/send-code', {phoneNumber});
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const confirmPhoneNumber = createAsyncThunk(
   'user/confirmPhoneNumber',
-  async (data: {id: string; phoneNumber: string; otpCode: string}) => {
+  async (
+    data: {id: string; phoneNumber: string; otpCode: string},
+    {rejectWithValue},
+  ) => {
     try {
       const response = await api.post(
         `/u/confirm-phone-number/${data.id}`,
@@ -179,19 +224,23 @@ export const confirmPhoneNumber = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
 
 export const resendCode = createAsyncThunk(
   'user/resendCode',
-  async (phoneNumber: string) => {
+  async (phoneNumber: string, {rejectWithValue}) => {
     try {
       const response = await api.post('/u/resend-code', {phoneNumber});
       return response.data;
     } catch (error: any) {
-      throw error;
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
@@ -213,7 +262,15 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
+      })
+      .addCase(fakeLoginUser.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(fakeLoginUser.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.payload;
       })
       .addCase(logoutUser.fulfilled, state => {
         state.status = 'idle';
@@ -252,14 +309,14 @@ const userSlice = createSlice({
       })
       .addCase(confirmUser.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(checkUserExists.fulfilled, (state, action) => {
         state.error = null;
       })
       .addCase(checkUserExists.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(resendConfirmation.fulfilled, (state, action) => {
         state.error = null;
@@ -268,35 +325,35 @@ const userSlice = createSlice({
         // Handle error
         // ...
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(addPersonalInfo.fulfilled, (state, action) => {
         state.error = null;
       })
       .addCase(addPersonalInfo.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(sendCode.fulfilled, (state, action) => {
         state.error = null;
       })
       .addCase(sendCode.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(confirmPhoneNumber.fulfilled, (state, action) => {
         state.error = null;
       })
       .addCase(confirmPhoneNumber.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(resendCode.fulfilled, (state, action) => {
         state.error = null;
       })
       .addCase(resendCode.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });
