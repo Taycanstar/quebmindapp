@@ -6,16 +6,40 @@ import CustomButton from '@components/auth/CustomButton';
 import CustomPasswordInput from '@components/auth/CustomPasswordInput';
 import Colors from '@utils/constants/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {addPersonalInfo, fetchUserByValue} from 'store/user';
+import {RootState, AppDispatch} from 'store';
+import {useDispatch, useSelector} from 'react-redux';
+
+interface User {
+  [key: string]: any;
+}
 
 type Props = {
   onBackPress: () => void;
+  onNext: () => void;
+  user: User | null;
 };
 
-const AddPersonalDetailsScreen: React.FC<Props> = ({onBackPress}) => {
+const AddPersonalDetailsScreen: React.FC<Props> = ({
+  onBackPress,
+  onNext,
+  user,
+}) => {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [organizationName, setOrganizationName] = useState<string>('');
   const [birthday, setBirthday] = useState<string>('');
+  const dispatch = useDispatch<AppDispatch>();
+  const userId: string = user?._id?.toString() || '';
+  const [isBdFocused, setIsBdFocused] = useState<boolean>(false);
+
+  const handleBdFocus = () => {
+    setIsBdFocused(true);
+  };
+
+  const handleBdBlur = () => {
+    setIsBdFocused(false);
+  };
 
   const onForgotPress = () => {};
 
@@ -32,10 +56,49 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({onBackPress}) => {
   };
 
   const handleBdChange = (value: string) => {
-    setBirthday(value);
+    const input = value.replace(/\D/g, ''); // Remove non-digit characters
+    let formattedDate = '';
+
+    if (input.length > 0) {
+      formattedDate += input.substr(0, 2);
+    }
+    if (input.length > 2) {
+      formattedDate += '/' + input.substr(2, 2);
+    }
+    if (input.length > 4) {
+      formattedDate += '/' + input.substr(4, 4);
+    }
+
+    setBirthday(formattedDate);
   };
 
-  const onContinuePress = () => {};
+  const userData = {
+    id: userId,
+    firstName,
+    lastName,
+    organizationName,
+    birthday,
+  };
+
+  const onContinuePress = async () => {
+    try {
+      // Dispatch the confirmUser action with the necessary payload
+      const res = await dispatch(
+        addPersonalInfo({
+          id: userId,
+          firstName,
+          lastName,
+          organizationName,
+          birthday,
+        }),
+      );
+
+      onNext();
+      // Handle success or perform additional actions
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <View style={styles.wrapper}>
@@ -91,9 +154,11 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({onBackPress}) => {
           textColor="white"
           bgColor={Colors.darkInputBg}
           placeholderTextColor="white"
-          placeholder="Birthday"
+          placeholder={isBdFocused ? 'MM/DD/YYYY' : 'Birthday'}
           value={birthday}
           onChange={handleBdChange}
+          onFocus={handleBdFocus}
+          onBlur={handleBdBlur}
         />
 
         <View style={{marginTop: 15}}>

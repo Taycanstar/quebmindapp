@@ -7,19 +7,27 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import AuthHeader from '@components/auth/AuthHeader';
 import CustomInput from '@components/auth/CustomInput';
 import CustomButton from '@components/auth/CustomButton';
 import Colors from '@utils/constants/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {CountryPicker} from 'react-native-country-codes-picker';
+import {loginUser, confirmPhoneNumber} from 'store/user';
+import {RootState, AppDispatch} from 'store';
+import {useDispatch, useSelector} from 'react-redux';
+
+interface User {
+  [key: string]: any;
+}
 
 type Props = {
   onBackPress: () => void;
   inputBgColor: string;
   textColor: string;
   bgColor: string;
+  user: User | null;
+  phoneNumber: string;
 };
 
 const EnterCodeScreen: React.FC<Props> = ({
@@ -27,9 +35,54 @@ const EnterCodeScreen: React.FC<Props> = ({
   bgColor,
   textColor,
   inputBgColor,
+  user,
+  phoneNumber,
 }) => {
   const [code, setCode] = useState<string>('');
-  const onContinuePress = () => {};
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleSubmit = async () => {
+    try {
+      const result = await dispatch(
+        loginUser({email: user?.email.toLowerCase(), password: user?.password}),
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (code && code.length === 6) {
+      onSubmit();
+    }
+  }, [code, handleSubmit]);
+
+  const onSubmit = useCallback(async () => {
+    try {
+      const res = await dispatch(
+        confirmPhoneNumber({
+          id: user?._id,
+          phoneNumber,
+          otpCode: code,
+        }),
+      );
+      console.log(res, 'res');
+      if (res?.payload.message === 'Phone number verified.') {
+        // move to the next step in your flow
+
+        const response = await dispatch(
+          loginUser({
+            email: user?.email.toLowerCase(),
+            password: user?.password,
+          }),
+        );
+      } else {
+        console.log('Code verification failed.');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [code, user, phoneNumber]);
 
   return (
     <View style={[styles.wrapper, {backgroundColor: bgColor}]}>
@@ -78,7 +131,7 @@ const EnterCodeScreen: React.FC<Props> = ({
 
         <View style={{marginTop: 15}}>
           <CustomButton
-            onPress={onContinuePress}
+            onPress={handleSubmit}
             textColor={textColor}
             bgColor={bgColor}
             value="Resend code"

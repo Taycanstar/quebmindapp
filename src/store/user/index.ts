@@ -8,10 +8,10 @@ interface UserState {
     name?: string;
     email?: string;
     id?: string;
-    registrationStep?: string; // Add registrationStep to the user data
+    registrationStep?: string;
   } | null;
 
-  status: 'idle' | 'loading' | 'loggedIn' | 'error';
+  status: 'idle' | 'loading' | 'loggedIn' | 'error' | 'verified';
   error?: string | null;
   token: string | null;
 }
@@ -91,6 +91,106 @@ export const fetchUserByValue = createAsyncThunk(
   },
 );
 
+export const confirmUser = createAsyncThunk(
+  'user/confirmUser',
+  async (data: {
+    confirmationToken: string;
+    email: string;
+    hashedPassword: string;
+  }) => {
+    try {
+      const response = await api.post('/u/confirm-user', data);
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const checkUserExists = createAsyncThunk(
+  'user/checkUserExists',
+  async (email: string) => {
+    try {
+      const response = await api.get(`/u/check-user-exists?email=${email}`);
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const resendConfirmation = createAsyncThunk(
+  'user/resendConfirmation',
+  async (email: string) => {
+    try {
+      const response = await api.post('/u/resend-confirmation', {email});
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const addPersonalInfo = createAsyncThunk(
+  'user/addPersonalInfo',
+  async (userData: {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    birthday?: string;
+    organizationName?: string;
+  }) => {
+    try {
+      const response = await api.put(
+        `/u/add-personal-info/${userData.id}`,
+        userData,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const sendCode = createAsyncThunk(
+  'user/sendCode',
+  async (phoneNumber: string) => {
+    try {
+      const response = await api.post('/u/send-code', {phoneNumber});
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const confirmPhoneNumber = createAsyncThunk(
+  'user/confirmPhoneNumber',
+  async (data: {id: string; phoneNumber: string; otpCode: string}) => {
+    try {
+      const response = await api.post(
+        `/u/confirm-phone-number/${data.id}`,
+        data,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
+export const resendCode = createAsyncThunk(
+  'user/resendCode',
+  async (phoneNumber: string) => {
+    try {
+      const response = await api.post('/u/resend-code', {phoneNumber});
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -126,6 +226,59 @@ const userSlice = createSlice({
           action.payload?.registrationStep ?? '';
       })
       .addCase(fetchUserData.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(confirmUser.fulfilled, (state, action) => {
+        // Handle success
+        state.status = 'verified';
+        state.error = null;
+      })
+      .addCase(confirmUser.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(checkUserExists.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(checkUserExists.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(resendConfirmation.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(resendConfirmation.rejected, (state, action) => {
+        // Handle error
+        // ...
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(addPersonalInfo.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(addPersonalInfo.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(sendCode.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(sendCode.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(confirmPhoneNumber.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(confirmPhoneNumber.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.error.message;
+      })
+      .addCase(resendCode.fulfilled, (state, action) => {
+        state.error = null;
+      })
+      .addCase(resendCode.rejected, (state, action) => {
         state.status = 'error';
         state.error = action.error.message;
       });

@@ -12,6 +12,8 @@ type Props = {
   editable?: boolean;
   keyboardType?: string;
   maxLength?: number;
+  onBlur?: () => void;
+  onFocus?: () => void;
 };
 
 const CustomInput: React.FC<Props> = ({
@@ -24,16 +26,20 @@ const CustomInput: React.FC<Props> = ({
   editable,
   keyboardType,
   maxLength,
+  onBlur,
+  onFocus,
 }) => {
   return (
     <View style={[styles.container, {backgroundColor: bgColor}]}>
       <TextInput
+        onBlur={onBlur}
         placeholderTextColor={placeholderTextColor}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
         style={[styles.input, {color: textColor}]}
         autoCapitalize="none"
+        onFocus={onFocus}
       />
     </View>
   );

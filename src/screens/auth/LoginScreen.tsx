@@ -10,27 +10,41 @@ import {useDispatch, useSelector} from 'react-redux';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnyAction} from '@reduxjs/toolkit';
 import {ThunkDispatch} from 'redux-thunk';
-import {RootState} from 'store';
+import {RootState, AppDispatch} from 'store';
 import {useNavigation} from '@react-navigation/native';
+
+interface User {
+  [key: string]: any;
+}
 
 type Props = {
   onPress: () => void;
+  onLoginSuccess: (user: User) => void;
+  // user: User | null;
 };
 
-const LoginScreen: React.FC<Props> = ({onPress}) => {
+const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
   const [val, setVal] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
   const [loginType, setLoginType] = useState<string>('');
   const navigation = useNavigation();
+  const [userValues, setUserValues] = useState<User | null>(null);
 
-  const dispatch = useDispatch();
+  const [user, setUser] = useState<User | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const dispatchTyped = dispatch as ThunkDispatch<
-    RootState,
-    undefined,
-    AnyAction
-  >;
+  const fetchUserData = async () => {
+    try {
+      const response = await dispatch(fetchUserByValue(val));
+      if (response.payload) {
+        setUser(response.payload); // Access the payload with the user data
+      }
+    } catch (error) {
+      // Handle error
+      console.log(error);
+    }
+  };
 
   const onForgotPress = () => {};
 
@@ -50,35 +64,59 @@ const LoginScreen: React.FC<Props> = ({onPress}) => {
   };
 
   const onLoginPress = async () => {
-    try {
-      if (loginType === 'email') {
-        const result = (await dispatchTyped(
-          loginUser({email: val.toLowerCase(), password}),
-        )) as AnyAction;
+    if (user !== null) {
+      // Pass the user values to the respective modals
 
-        console.log(result);
-      } else {
-        const result = (await dispatchTyped(
-          loginUser({username: val.toLowerCase(), password}),
-        )) as AnyAction;
-        console.log(result);
+      if (user.registrationStep === 'phoneNumberVerified') {
+        // Login User
+        try {
+          if (loginType === 'email') {
+            const result = await dispatch(
+              loginUser({email: val.toLowerCase(), password}),
+            );
+          } else {
+            const result = await dispatch(
+              loginUser({username: val.toLowerCase(), password}),
+            );
+          }
+        } catch (error) {
+          console.error(`Error`, error);
+        }
+        onLoginSuccess(user);
+      } else if (user.registrationStep === 'emailVerified') {
+        // setIsLoginVisible to false, setIsPdScreen to true
+        onLoginSuccess(user);
+      } else if (user.registrationStep === 'personalInfoVerified') {
+        // setIsLoginVisible to false, setIsPhScreen to true
+        onLoginSuccess(user);
       }
-
-      // if (user !== null) {
-      //   if (user.registrationStep === 'phoneNumberVerified') {
-      //     // Redirect the user to the platform/apps page
-      //     router.push('/platform/apps');
-      //   } else if (user.registrationStep === 'emailVerified') {
-      //     // Redirect the user to the verify info page
-      //     router.push('/auth/onboarding/details');
-      //   } else if (user.registrationStep === 'personalInfoVerified') {
-      //     // Redirect the user to the verify phone number page
-
-      //   }
-      // }
+    }
+  };
+  const fetchUserAndLogin = async () => {
+    try {
+      const response = await dispatch(fetchUserByValue(val));
+      if (response.payload) {
+        const user = response.payload;
+        if (user.registrationStep === 'phoneNumberVerified') {
+          if (loginType === 'email') {
+            await dispatch(loginUser({email: val.toLowerCase(), password}));
+          } else {
+            await dispatch(loginUser({username: val.toLowerCase(), password}));
+          }
+          onLoginSuccess(user);
+        } else if (user.registrationStep === 'emailVerified') {
+          onLoginSuccess(user);
+        } else if (user.registrationStep === 'personalInfoVerified') {
+          onLoginSuccess(user);
+        }
+      }
     } catch (error) {
       console.error(`Error`, error);
     }
+  };
+
+  const onLogin = () => {
+    fetchUserAndLogin();
   };
   return (
     <View style={styles.wrapper}>
@@ -119,7 +157,7 @@ const LoginScreen: React.FC<Props> = ({onPress}) => {
         </TouchableOpacity>
 
         <CustomButton
-          onPress={onLoginPress}
+          onPress={onLogin}
           textColor="white"
           bgColor={Colors.navy2}
           value="Log in"

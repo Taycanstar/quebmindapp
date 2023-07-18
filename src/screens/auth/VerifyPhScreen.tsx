@@ -14,24 +14,50 @@ import CustomButton from '@components/auth/CustomButton';
 import Colors from '@utils/constants/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {CountryPicker} from 'react-native-country-codes-picker';
+import {sendCode, fetchUserByValue} from 'store/user';
+import {RootState, AppDispatch} from 'store';
+import {useDispatch, useSelector} from 'react-redux';
+
+interface User {
+  [key: string]: any;
+}
 
 type Props = {
   onBackPress: () => void;
+  onVerify: (phoneNumber: string) => void;
+  onNext: () => void;
   inputBgColor: string;
   textColor: string;
   bgColor: string;
+  user: User | null;
 };
 
 const VerifyPhScreen: React.FC<Props> = ({
   onBackPress,
+  onNext,
   bgColor,
   textColor,
   inputBgColor,
+  user,
+  onVerify,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [show, setShow] = useState(false);
   const [countryCode, setCountryCode] = useState('+1');
-  const onContinuePress = () => {};
+  const dispatch = useDispatch<AppDispatch>();
+  const userId: string = user?._id?.toString() || '';
+
+  const onContinuePress = async () => {
+    try {
+      // Dispatch the confirmUser action with the necessary payload
+      const res = await dispatch(sendCode(`${countryCode}${phoneNumber}`));
+      console.log(res, 'response');
+      onVerify(`${countryCode}${phoneNumber}`);
+      onNext();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <View style={[styles.wrapper, {backgroundColor: bgColor}]}>

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,12 +21,44 @@ import VerifyPhScreen from './VerifyPhScreen';
 import EnterCodeScreen from './EnterCodeScreen';
 
 export type Props = {};
+interface User {
+  [key: string]: any;
+}
 
 const AuthScreen: React.FC<Props> = (Props: Props) => {
   const [isLoginVisible, setIsLoginVisible] = useState<boolean>(false);
   const [isPdVisible, setIsPdVisible] = useState<boolean>(false);
   const [isPhVisible, setIsPhVisible] = useState<boolean>(false);
   const [isCodeVisible, setIsCodeVisible] = useState<boolean>(false);
+  const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+
+  const handleVerify = (phoneNumber: string) => {
+    setPhoneNumber(phoneNumber);
+  };
+
+  const handleLoginSuccess = (user: User) => {
+    setLoggedInUser(user);
+    if (user.registrationStep === 'phoneNumberVerified') {
+      setIsLoginVisible(false);
+    } else if (user.registrationStep === 'emailVerified') {
+      setIsLoginVisible(false);
+      setIsPdVisible(true);
+    } else if (user.registrationStep === 'personalInfoVerified') {
+      setIsLoginVisible(false);
+      setIsPhVisible(true);
+    }
+  };
+
+  const handlePdScreenNext = () => {
+    setIsPdVisible(false);
+    setIsPhVisible(true); // Open VerifyPhScreen modal
+  };
+
+  const handlePhScreenNext = () => {
+    setIsPhVisible(false);
+    setIsCodeVisible(true); // Open EnterCodeScreen modal
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,7 +97,10 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
             // onPress={() => setIsLoginVisible(false)}
             style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <LoginScreen onPress={() => setIsLoginVisible(false)} />
+              <LoginScreen
+                onLoginSuccess={handleLoginSuccess}
+                onPress={() => setIsLoginVisible(false)}
+              />
             </View>
           </TouchableOpacity>
         </Modal>
@@ -80,6 +115,8 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
           <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <AddPersonalDetailsScreen
+                onNext={handlePdScreenNext}
+                user={loggedInUser}
                 onBackPress={() => setIsPdVisible(false)}
               />
             </View>
@@ -95,8 +132,11 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
           <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <VerifyPhScreen
+                onVerify={handleVerify}
+                onNext={handlePhScreenNext}
                 bgColor="black"
                 textColor="white"
+                user={loggedInUser}
                 inputBgColor={Colors.darkInputBg}
                 onBackPress={() => setIsPhVisible(false)}
               />
@@ -114,9 +154,11 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
           <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <EnterCodeScreen
+                phoneNumber={phoneNumber}
                 bgColor="black"
                 textColor="white"
                 inputBgColor={Colors.darkInputBg}
+                user={loggedInUser}
                 onBackPress={() => setIsCodeVisible(false)}
               />
             </View>
