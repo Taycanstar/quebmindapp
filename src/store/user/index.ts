@@ -11,8 +11,8 @@ interface UserState {
     registrationStep?: string;
   } | null;
 
-  status: 'idle' | 'loading' | 'loggedIn' | 'error' | 'verified';
-  error?: string | null;
+  status: 'idle' | 'loading' | 'loggedIn' | 'error';
+  error?: string | null | any;
   token: string | null;
 }
 
@@ -40,6 +40,7 @@ export const loginUser = createAsyncThunk(
       await AsyncStorage.setItem('token', response.data.token); // Save the token to AsyncStorage
       return response.data;
     } catch (error: any) {
+      console.log(error);
       return rejectWithValue(error.response.data);
     }
   },
@@ -74,6 +75,7 @@ export const fetchUserData = createAsyncThunk(
 
       return userData;
     } catch (error: any) {
+      console.log(error);
       return rejectWithValue(error.response.data);
     }
   },
@@ -86,7 +88,10 @@ export const fetchUserByValue = createAsyncThunk(
       const response = await api.get(`/api/get-user-by-value?value=${value}`);
       return response.data.user;
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
+      console.log(error, '<= Error');
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
   },
 );
@@ -220,7 +225,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserData.fulfilled, (state, action) => {
         state.data = action.payload;
-        state.status = 'loggedIn';
+        // state.status = 'loggedIn';
         state.error = null;
         (state.data as {registrationStep?: string}).registrationStep =
           action.payload?.registrationStep ?? '';
@@ -229,9 +234,20 @@ const userSlice = createSlice({
         state.status = 'error';
         state.error = action.error.message;
       })
+      .addCase(fetchUserByValue.fulfilled, (state, action) => {
+        // Handle success
+        console.log(action.payload, '<= Fulfilled payload');
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchUserByValue.rejected, (state, action) => {
+        console.log(action.payload, '<= Rejected error');
+        state.status = 'error';
+        state.error = action.payload;
+      })
       .addCase(confirmUser.fulfilled, (state, action) => {
         // Handle success
-        state.status = 'verified';
+
         state.error = null;
       })
       .addCase(confirmUser.rejected, (state, action) => {

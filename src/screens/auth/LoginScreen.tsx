@@ -1,8 +1,15 @@
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import AuthHeader from '@components/auth/AuthHeader';
 import CustomInput from '@components/auth/CustomInput';
 import CustomButton from '@components/auth/CustomButton';
+import LoadingButton from '@components/LoadingButton';
 import CustomPasswordInput from '@components/auth/CustomPasswordInput';
 import Colors from '@utils/constants/Colors';
 import {loginUser, fetchUserByValue} from '../../store/user';
@@ -26,10 +33,10 @@ type Props = {
 const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
   const [val, setVal] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
   const [loginType, setLoginType] = useState<string>('');
-  const navigation = useNavigation();
-  const [userValues, setUserValues] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   const [user, setUser] = useState<User | null>(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -63,40 +70,22 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
     setVal(value);
   };
 
-  const onLoginPress = async () => {
-    if (user !== null) {
-      // Pass the user values to the respective modals
-
-      if (user.registrationStep === 'phoneNumberVerified') {
-        // Login User
-        try {
-          if (loginType === 'email') {
-            const result = await dispatch(
-              loginUser({email: val.toLowerCase(), password}),
-            );
-          } else {
-            const result = await dispatch(
-              loginUser({username: val.toLowerCase(), password}),
-            );
-          }
-        } catch (error) {
-          console.error(`Error`, error);
-        }
-        onLoginSuccess(user);
-      } else if (user.registrationStep === 'emailVerified') {
-        // setIsLoginVisible to false, setIsPdScreen to true
-        onLoginSuccess(user);
-      } else if (user.registrationStep === 'personalInfoVerified') {
-        // setIsLoginVisible to false, setIsPhScreen to true
-        onLoginSuccess(user);
-      }
-    }
-  };
   const fetchUserAndLogin = async () => {
     try {
+      setIsLoading(true);
       const response = await dispatch(fetchUserByValue(val));
-      if (response.payload) {
+      if ('error' in response) {
+        setErrorText((response.payload as {message: string}).message);
+        console.error(
+          `Error on Screen`,
+          (response.payload as {message: string}).message,
+        );
+        setIsLoading(false);
+      } else if (response.payload) {
         const user = response.payload;
+        // setTimeout(() => {
+        //   setIsLoading(false);
+        // }, 500);
         if (user.registrationStep === 'phoneNumberVerified') {
           if (loginType === 'email') {
             await dispatch(loginUser({email: val.toLowerCase(), password}));
@@ -110,8 +99,11 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
           onLoginSuccess(user);
         }
       }
-    } catch (error) {
-      console.error(`Error`, error);
+    } catch (error: any) {
+      console.error(`Error on Screen`, error.message);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   };
 
@@ -156,12 +148,16 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
           </Text>
         </TouchableOpacity>
 
-        <CustomButton
-          onPress={onLogin}
-          textColor="white"
-          bgColor={Colors.navy2}
-          value="Log in"
-        />
+        {isLoading ? (
+          <LoadingButton />
+        ) : (
+          <CustomButton
+            onPress={onLogin}
+            textColor="white"
+            bgColor={Colors.navy2}
+            value="Log in"
+          />
+        )}
 
         <View
           style={{

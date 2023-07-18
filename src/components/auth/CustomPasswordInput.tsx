@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: 'transparent',
+    width: '90%',
   },
   iconContainer: {},
 });

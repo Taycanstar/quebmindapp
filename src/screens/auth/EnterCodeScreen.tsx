@@ -6,6 +6,7 @@ import {
   TextInput,
   StyleProp,
   ViewStyle,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import AuthHeader from '@components/auth/AuthHeader';

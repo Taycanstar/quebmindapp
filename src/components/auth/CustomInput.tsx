@@ -52,8 +52,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
+    width: '100%',
   },
   input: {
     backgroundColor: 'transparent',
+    width: '100%',
   },
 });
