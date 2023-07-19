@@ -222,8 +222,10 @@ export const confirmPhoneNumber = createAsyncThunk(
         `/u/confirm-phone-number/${data.id}`,
         data,
       );
+      console.log(response);
       return response.data;
     } catch (error: any) {
+      console.log(error);
       return rejectWithValue(
         error.response ? error.response.data : error.message,
       );

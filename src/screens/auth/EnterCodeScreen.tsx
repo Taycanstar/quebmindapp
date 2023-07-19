@@ -29,6 +29,7 @@ type Props = {
   bgColor: string;
   user: User | null;
   phoneNumber: string;
+  ogPassword: string;
 };
 
 const EnterCodeScreen: React.FC<Props> = ({
@@ -38,25 +39,16 @@ const EnterCodeScreen: React.FC<Props> = ({
   inputBgColor,
   user,
   phoneNumber,
+  ogPassword,
 }) => {
   const [code, setCode] = useState<string>('');
   const dispatch = useDispatch<AppDispatch>();
-
-  const handleSubmit = async () => {
-    try {
-      const result = await dispatch(
-        loginUser({email: user?.email.toLowerCase(), password: user?.password}),
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   useEffect(() => {
     if (code && code.length === 6) {
       onSubmit();
     }
-  }, [code, handleSubmit]);
+  }, [code]);
 
   const onSubmit = useCallback(async () => {
     try {
@@ -70,13 +62,15 @@ const EnterCodeScreen: React.FC<Props> = ({
       console.log(res, 'res');
       if (res?.payload.message === 'Phone number verified.') {
         // move to the next step in your flow
-
-        const response = await dispatch(
+        console.log(res?.payload.message, 'res');
+        const action = await dispatch(
           loginUser({
             email: user?.email.toLowerCase(),
-            password: user?.password,
+            password: ogPassword,
           }),
         );
+
+        console.log(action, 'frontend action');
       } else {
         console.log('Code verification failed.');
       }
@@ -132,7 +126,7 @@ const EnterCodeScreen: React.FC<Props> = ({
 
         <View style={{marginTop: 15}}>
           <CustomButton
-            onPress={handleSubmit}
+            onPress={onSubmit}
             textColor={textColor}
             bgColor={bgColor}
             value="Resend code"

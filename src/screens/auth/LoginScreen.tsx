@@ -28,10 +28,15 @@ interface User {
 type Props = {
   onPress: () => void;
   onLoginSuccess: (user: User) => void;
+  setOgPassword: React.Dispatch<React.SetStateAction<string>>;
   // user: User | null;
 };
 
-const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
+const LoginScreen: React.FC<Props> = ({
+  onPress,
+  onLoginSuccess,
+  setOgPassword,
+}) => {
   const [val, setVal] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loginType, setLoginType] = useState<string>('');
@@ -42,16 +47,9 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
   const [user, setUser] = useState<User | null>(null);
   const dispatch = useDispatch<AppDispatch>();
 
-  const fetchUserData = async () => {
-    try {
-      const response = await dispatch(fetchUserByValue(val));
-      if (response.payload) {
-        setUser(response.payload); // Access the payload with the user data
-      }
-    } catch (error) {
-      // Handle error
-      console.log(error);
-    }
+  const handlePassword = (text: string) => {
+    setPassword(text);
+    setOgPassword(text);
   };
 
   const onForgotPress = () => {};
@@ -70,66 +68,6 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
 
     setVal(value);
   };
-
-  // const fetchUserAndLogin = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await dispatch(fetchUserByValue(val));
-  //     if ('error' in response) {
-  //       setError(true);
-  //       setErrorText((response.payload as {message: string}).message);
-  //       setTimeout(() => {
-  //         setError(false);
-  //       }, 4000);
-  //       console.log(
-  //         `Error on Screen`,
-  //         (response.payload as {message: string}).message,
-  //       );
-  //       setIsLoading(false);
-  //     } else if (response.payload) {
-  //       const user = response.payload;
-  //       // const isMatch = await BcryptReactNative.compareSync(
-  //       //   password,
-  //       //   user.password,
-  //       // );
-  //       const isMatch = true;
-  //       console.log(isMatch, 'match');
-  //       if (!isMatch) {
-  //         setError(true);
-  //         setErrorText('Incorrect password');
-  //         setTimeout(() => {
-  //           setError(false);
-  //         }, 4000);
-  //         setTimeout(() => {
-  //           setIsLoading(false);
-  //         }, 500);
-  //       } else {
-  //         if (user.registrationStep === 'phoneNumberVerified') {
-  //           if (loginType === 'email') {
-  //             await dispatch(loginUser({email: val.toLowerCase(), password}));
-  //           } else {
-  //             await dispatch(
-  //               loginUser({username: val.toLowerCase(), password}),
-  //             );
-  //           }
-  //           onLoginSuccess(user);
-  //         } else if (user.registrationStep === 'emailVerified') {
-  //           onLoginSuccess(user);
-  //         } else if (user.registrationStep === 'personalInfoVerified') {
-  //           onLoginSuccess(user);
-  //         }
-  //       }
-  //     }
-  //   } catch (error: any) {
-  //     setTimeout(() => {
-  //       setIsLoading(false);
-  //     }, 500);
-  //   }
-  // };
-
-  // const onLogin = () => {
-  //   fetchUserAndLogin();
-  // };
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -201,7 +139,7 @@ const LoginScreen: React.FC<Props> = ({onPress, onLoginSuccess}) => {
           bgColor={Colors.darkInputBg}
           placeholder="Enter password"
           value={password}
-          onChange={(newText: string) => setPassword(newText)}
+          onChange={handlePassword}
         />
         {error && <ErrorText text={errorText} />}
 

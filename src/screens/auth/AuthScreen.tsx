@@ -32,6 +32,7 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
   const [isCodeVisible, setIsCodeVisible] = useState<boolean>(false);
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [ogPassword, setOgPassword] = useState<string>('');
 
   const handleVerify = (phoneNumber: string) => {
     setPhoneNumber(phoneNumber);
@@ -100,6 +101,7 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
               <LoginScreen
                 onLoginSuccess={handleLoginSuccess}
                 onPress={() => setIsLoginVisible(false)}
+                setOgPassword={setOgPassword}
               />
             </View>
           </TouchableOpacity>
@@ -159,6 +161,7 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
                 textColor="white"
                 inputBgColor={Colors.darkInputBg}
                 user={loggedInUser}
+                ogPassword={ogPassword}
                 onBackPress={() => setIsCodeVisible(false)}
               />
             </View>
