@@ -9,6 +9,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {addPersonalInfo, fetchUserByValue} from 'store/user';
 import {RootState, AppDispatch} from 'store';
 import {useDispatch, useSelector} from 'react-redux';
+import LoadingButton from '@components/LoadingButton';
+import ErrorText from '@components/ErrorText';
 
 interface User {
   [key: string]: any;
@@ -27,11 +29,15 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({
 }) => {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [organizationName, setOrganizationName] = useState<string>('');
   const [birthday, setBirthday] = useState<string>('');
   const dispatch = useDispatch<AppDispatch>();
   const userId: string = user?._id?.toString() || '';
   const [isBdFocused, setIsBdFocused] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   const handleBdFocus = () => {
     setIsBdFocused(true);
@@ -83,9 +89,11 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({
   const onContinuePress = async () => {
     try {
       // Dispatch the confirmUser action with the necessary payload
-      const res = await dispatch(
+      setIsLoading(true);
+      const action = await dispatch(
         addPersonalInfo({
           id: userId,
+          username: username.toLocaleLowerCase(),
           firstName,
           lastName,
           organizationName,
@@ -93,10 +101,27 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({
         }),
       );
 
+      if ('error' in action) {
+        setError(true);
+        setErrorText((action.payload as {message: string}).message);
+        setTimeout(() => {
+          setError(false);
+        }, 4000);
+        console.log(
+          `Error on Screen`,
+          (action.payload as {message: string}).message,
+        );
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
       onNext();
       // Handle success or perform additional actions
     } catch (error) {
       console.log(error);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   };
 
@@ -154,12 +179,22 @@ const AddPersonalDetailsScreen: React.FC<Props> = ({
           textColor="white"
           bgColor={Colors.darkInputBg}
           placeholderTextColor="white"
+          placeholder="Username"
+          value={username}
+          onChange={txt => setUsername(txt)}
+        />
+        <CustomInput
+          textColor="white"
+          bgColor={Colors.darkInputBg}
+          placeholderTextColor="white"
           placeholder={isBdFocused ? 'MM/DD/YYYY' : 'Birthday'}
           value={birthday}
           onChange={handleBdChange}
           onFocus={handleBdFocus}
           onBlur={handleBdBlur}
         />
+
+        {error && <ErrorText text={errorText} />}
 
         <View style={{marginTop: 15}}>
           <CustomButton

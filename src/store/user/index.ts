@@ -176,10 +176,11 @@ export const addPersonalInfo = createAsyncThunk(
   async (
     userData: {
       id?: string;
-      firstName?: string;
-      lastName?: string;
-      birthday?: string;
+      firstName: string;
+      lastName: string;
+      birthday: string;
       organizationName?: string;
+      username: string;
     },
     {rejectWithValue},
   ) => {

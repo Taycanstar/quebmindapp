@@ -17,6 +17,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {loginUser, confirmPhoneNumber} from 'store/user';
 import {RootState, AppDispatch} from 'store';
 import {useDispatch, useSelector} from 'react-redux';
+import ErrorText from '@components/ErrorText';
+import LoadingButton from '@components/LoadingButton';
 
 interface User {
   [key: string]: any;
@@ -43,6 +45,9 @@ const EnterCodeScreen: React.FC<Props> = ({
 }) => {
   const [code, setCode] = useState<string>('');
   const dispatch = useDispatch<AppDispatch>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     if (code && code.length === 6) {
@@ -52,6 +57,7 @@ const EnterCodeScreen: React.FC<Props> = ({
 
   const onSubmit = useCallback(async () => {
     try {
+      setIsLoading(true);
       const res = await dispatch(
         confirmPhoneNumber({
           id: user?._id,
@@ -59,9 +65,23 @@ const EnterCodeScreen: React.FC<Props> = ({
           otpCode: code,
         }),
       );
+      if ('error' in res) {
+        setError(true);
+        setErrorText((res.payload as {message: string}).message);
+        setTimeout(() => {
+          setError(false);
+        }, 4000);
+        console.log(
+          `Error on Screen`,
+          (res.payload as {message: string}).message,
+        );
+      }
       console.log(res, 'res');
       if (res?.payload.message === 'Phone number verified.') {
         // move to the next step in your flow
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
         console.log(res?.payload.message, 'res');
         const action = await dispatch(
           loginUser({
@@ -69,13 +89,35 @@ const EnterCodeScreen: React.FC<Props> = ({
             password: ogPassword,
           }),
         );
+        if ('error' in action) {
+          setError(true);
+          setErrorText((action.payload as {message: string}).message);
+          setTimeout(() => {
+            setError(false);
+          }, 4000);
+          console.log(
+            `Error on Screen`,
+            (action.payload as {message: string}).message,
+          );
+        }
 
         console.log(action, 'frontend action');
       } else {
+        setError(true);
+        setErrorText((res.payload as {message: string}).message);
+        setTimeout(() => {
+          setError(false);
+        }, 4000);
         console.log('Code verification failed.');
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       }
     } catch (error) {
       console.log(error);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   }, [code, user, phoneNumber]);
 
@@ -123,6 +165,7 @@ const EnterCodeScreen: React.FC<Props> = ({
           keyboardType="numeric"
           maxLength={6}
         />
+        {error && <ErrorText text={errorText} />}
 
         <View style={{marginTop: 15}}>
           <CustomButton

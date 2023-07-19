@@ -17,6 +17,8 @@ import {CountryPicker} from 'react-native-country-codes-picker';
 import {sendCode, fetchUserByValue} from 'store/user';
 import {RootState, AppDispatch} from 'store';
 import {useDispatch, useSelector} from 'react-redux';
+import ErrorText from '@components/ErrorText';
+import LoadingButton from '@components/LoadingButton';
 
 interface User {
   [key: string]: any;
@@ -46,12 +48,19 @@ const VerifyPhScreen: React.FC<Props> = ({
   const [countryCode, setCountryCode] = useState('+1');
   const dispatch = useDispatch<AppDispatch>();
   const userId: string = user?._id?.toString() || '';
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   const onContinuePress = async () => {
     try {
       // Dispatch the confirmUser action with the necessary payload
+      setIsLoading(true);
       const res = await dispatch(sendCode(`${countryCode}${phoneNumber}`));
       console.log(res, 'response');
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
       onVerify(`${countryCode}${phoneNumber}`);
       onNext();
     } catch (error) {
@@ -120,12 +129,16 @@ const VerifyPhScreen: React.FC<Props> = ({
           />
         </View>
         <View style={{marginTop: 15}}>
-          <CustomButton
-            onPress={onContinuePress}
-            textColor={textColor}
-            bgColor={Colors.navy2}
-            value="Send code"
-          />
+          {isLoading ? (
+            <LoadingButton />
+          ) : (
+            <CustomButton
+              onPress={onContinuePress}
+              textColor={textColor}
+              bgColor={Colors.navy2}
+              value="Send code"
+            />
+          )}
         </View>
       </View>
     </View>
