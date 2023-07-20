@@ -14,7 +14,7 @@ import CustomButton from '@components/auth/CustomButton';
 import Colors from '@utils/constants/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {CountryPicker} from 'react-native-country-codes-picker';
-import {sendCode, fetchUserByValue} from 'store/user';
+import {changePassword} from 'store/user';
 import {RootState, AppDispatch} from 'store';
 import {useDispatch, useSelector} from 'react-redux';
 import ErrorText from '@components/ErrorText';
@@ -28,11 +28,12 @@ interface User {
 
 type Props = {
   onBackPress: () => void;
-  onResetSuccess: (user: User, email: string) => void;
+  onResetSuccess: () => void;
   inputBgColor: string;
   textColor: string;
   bgColor: string;
   user: User | null;
+  email: string;
 };
 
 const ResetPasswordScreen: React.FC<Props> = ({
@@ -41,6 +42,8 @@ const ResetPasswordScreen: React.FC<Props> = ({
   textColor,
   inputBgColor,
   onResetSuccess,
+  user,
+  email,
 }) => {
   const [password, setPassword] = useState<string>('');
   const [show, setShow] = useState(false);
@@ -50,9 +53,39 @@ const ResetPasswordScreen: React.FC<Props> = ({
   const [error, setError] = useState<boolean>(false);
   const [successText, setSuccessText] = useState<string>('');
   const [success, setSuccess] = useState<boolean>(false);
+  const userId = user?._id.toString();
 
   const onContinuePress = async () => {
     //add data
+    setIsLoading(true);
+    const action = await dispatch(changePassword({password, id: userId}));
+
+    if ('error' in action) {
+      setError(true);
+      setErrorText((action.payload as {message: string}).message);
+      setTimeout(() => {
+        setError(false);
+      }, 4000);
+      console.log(
+        `Error on Screen`,
+        (action.payload as {message: string}).message,
+      );
+    } else {
+      setSuccess(true);
+      setSuccessText(
+        'Pasword reset successful. You will be sent to the login page shortly',
+      );
+      setTimeout(() => {
+        setSuccess(false);
+      }, 4000);
+      if (user) {
+        setTimeout(() => {
+          onResetSuccess();
+        }, 4000);
+      } else {
+        console.log(error);
+      }
+    }
   };
 
   return (
@@ -68,7 +101,7 @@ const ResetPasswordScreen: React.FC<Props> = ({
         <AuthHeader
           textColor={textColor}
           bgColor="transparent"
-          text="Enter your new password"
+          text="Reset your password"
         />
         <View>
           <View>
@@ -77,7 +110,7 @@ const ResetPasswordScreen: React.FC<Props> = ({
                 placeholderTextColor="white"
                 textColor="white"
                 bgColor={Colors.darkInputBg}
-                placeholder="Enter password"
+                placeholder="Enter new password"
                 value={password}
                 onChange={txt => setPassword(txt)}
               />
@@ -85,7 +118,7 @@ const ResetPasswordScreen: React.FC<Props> = ({
           </View>
         </View>
         {error && <ErrorText text={errorText} />}
-        {error && <SuccessText text={successText} />}
+        {success && <SuccessText text={successText} />}
         <View style={{marginTop: 15}}>
           {isLoading ? (
             <LoadingButton />

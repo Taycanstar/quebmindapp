@@ -81,16 +81,16 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
     setLoggedOutEmail(email);
   };
 
-  const handleOnOtpNext = () => {
+  const handleOnOtpNext = (user: User, email: string) => {
     setIsOtpVisible(false);
     setIsResetVisible(true);
+    setLoggedInUser(user);
+    setLoggedOutEmail(email);
   };
 
   const handleOnResetNext = () => {
     setIsResetVisible(false);
-    setTimeout(() => {
-      setIsLoginVisible(true);
-    }, 5000);
+    setIsLoginVisible(true);
   };
 
   return (
@@ -234,7 +234,7 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
                 bgColor="black"
                 textColor="white"
                 inputBgColor={Colors.darkInputBg}
-                user={loggedOutUser}
+                user={loggedInUser}
                 onNext={handleOnOtpNext}
                 onBackPress={() => setIsOtpVisible(false)}
               />
@@ -251,10 +251,11 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
           <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <ResetPasswordScreen
+                email={loggedOutEmail}
                 bgColor="black"
                 textColor="white"
                 inputBgColor={Colors.darkInputBg}
-                user={loggedOutUser}
+                user={loggedInUser}
                 onResetSuccess={handleOnResetNext}
                 onBackPress={() => setIsResetVisible(false)}
               />

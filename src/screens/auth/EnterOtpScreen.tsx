@@ -26,12 +26,12 @@ interface User {
 
 type Props = {
   onBackPress: () => void;
+  onNext: (user: User, email: string) => void;
   inputBgColor: string;
   textColor: string;
   bgColor: string;
   user: User | null;
   email: string;
-  onNext: () => void;
 };
 
 const EnterOtpScreen: React.FC<Props> = ({
@@ -65,6 +65,8 @@ const EnterOtpScreen: React.FC<Props> = ({
       }),
     );
 
+    const user = action.payload.user;
+
     if ('error' in action) {
       setError(true);
       setErrorText((action.payload as {message: string}).message);
@@ -76,7 +78,12 @@ const EnterOtpScreen: React.FC<Props> = ({
         (action.payload as {message: string}).message,
       );
     } else {
-      onNext();
+      if (user) {
+        onNext(user, email);
+      } else {
+        // Handle the case where user is null
+        console.error('User is null');
+      }
     }
   }, [code, user, email]);
 
