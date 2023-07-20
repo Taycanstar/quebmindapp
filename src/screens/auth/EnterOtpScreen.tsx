@@ -14,7 +14,7 @@ import CustomInput from '@components/auth/CustomInput';
 import CustomButton from '@components/auth/CustomButton';
 import Colors from '@utils/constants/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {loginUser, confirmPhoneNumber, resendCode} from 'store/user';
+import {loginUser, confirmOtp, resendOtp} from 'store/user';
 import {RootState, AppDispatch} from 'store';
 import {useDispatch, useSelector} from 'react-redux';
 import ErrorText from '@components/ErrorText';
@@ -30,18 +30,18 @@ type Props = {
   textColor: string;
   bgColor: string;
   user: User | null;
-  phoneNumber: string;
-  ogPassword: string;
+  email: string;
+  onNext: () => void;
 };
 
-const EnterCodeScreen: React.FC<Props> = ({
+const EnterOtpScreen: React.FC<Props> = ({
   onBackPress,
   bgColor,
   textColor,
   inputBgColor,
   user,
-  phoneNumber,
-  ogPassword,
+  email,
+  onNext,
 }) => {
   const [code, setCode] = useState<string>('');
   const dispatch = useDispatch<AppDispatch>();
@@ -57,73 +57,31 @@ const EnterCodeScreen: React.FC<Props> = ({
   }, [code]);
 
   const onSubmit = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const res = await dispatch(
-        confirmPhoneNumber({
-          id: user?._id,
-          phoneNumber,
-          otpCode: code,
-        }),
-      );
-      if ('error' in res) {
-        setError(true);
-        setErrorText((res.payload as {message: string}).message);
-        setTimeout(() => {
-          setError(false);
-        }, 4000);
-        console.log(
-          `Error on Screen`,
-          (res.payload as {message: string}).message,
-        );
-      }
-      console.log(res, 'res');
-      if (res?.payload.message === 'Phone number verified.') {
-        // move to the next step in your flow
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-        console.log(res?.payload.message, 'res');
-        const action = await dispatch(
-          loginUser({
-            email: user?.email.toLowerCase(),
-            password: ogPassword,
-          }),
-        );
-        if ('error' in action) {
-          setError(true);
-          setErrorText((action.payload as {message: string}).message);
-          setTimeout(() => {
-            setError(false);
-          }, 4000);
-          console.log(
-            `Error on Screen`,
-            (action.payload as {message: string}).message,
-          );
-        }
+    setIsLoading(true);
+    const action = await dispatch(
+      confirmOtp({
+        confirmationToken: code,
+        email,
+      }),
+    );
 
-        console.log(action, 'frontend action');
-      } else {
-        setError(true);
-        setErrorText((res.payload as {message: string}).message);
-        setTimeout(() => {
-          setError(false);
-        }, 4000);
-        console.log('Code verification failed.');
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-      }
-    } catch (error) {
-      console.log(error);
+    if ('error' in action) {
+      setError(true);
+      setErrorText((action.payload as {message: string}).message);
       setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+        setError(false);
+      }, 4000);
+      console.log(
+        `Error on Screen`,
+        (action.payload as {message: string}).message,
+      );
+    } else {
+      onNext();
     }
-  }, [code, user, phoneNumber]);
+  }, [code, user, email]);
 
   const onResend = async () => {
-    const action = await dispatch(resendCode(phoneNumber));
+    const action = await dispatch(resendOtp(email));
     if ('error' in action) {
       setError(true);
       setErrorText((action.payload as {message: string}).message);
@@ -155,7 +113,7 @@ const EnterCodeScreen: React.FC<Props> = ({
         <AuthHeader
           textColor={textColor}
           bgColor="transparent"
-          text="Enter code"
+          text="Enter OTP"
         />
         <View
           style={{
@@ -172,7 +130,7 @@ const EnterCodeScreen: React.FC<Props> = ({
               marginBottom: 20,
               marginRight: 10,
             }}>
-            Input the code that was recently sent to you.
+            Input the code that was recently sent to your email.
           </Text>
         </View>
 
@@ -192,7 +150,7 @@ const EnterCodeScreen: React.FC<Props> = ({
           {showSent ? (
             <View>
               <Text style={{color: 'white', textAlign: 'center'}}>
-                Code sent.
+                OTP sent.
               </Text>
             </View>
           ) : (
@@ -206,7 +164,7 @@ const EnterCodeScreen: React.FC<Props> = ({
                   style={{
                     color: 'white',
                   }}>
-                  Resend Code
+                  Resend OTP
                 </Text>
               </TouchableOpacity>
             </View>
@@ -217,7 +175,7 @@ const EnterCodeScreen: React.FC<Props> = ({
   );
 };
 
-export default EnterCodeScreen;
+export default EnterOtpScreen;
 
 const styles = StyleSheet.create({
   container: {

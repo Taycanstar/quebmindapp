@@ -7,4 +7,5 @@ export default {
   metagray: '#eff2f5',
   darkInputBg: 'rgba(40,40,40,1)',
   error: 'rgba(195,0,20,1)',
+  success: 'rgba(40,193,49,1)',
 };

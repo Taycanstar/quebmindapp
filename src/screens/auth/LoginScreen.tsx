@@ -23,13 +23,14 @@ type Props = {
   onPress: () => void;
   onLoginSuccess: (user: User) => void;
   setOgPassword: React.Dispatch<React.SetStateAction<string>>;
-  // user: User | null;
+  showForgotPasswordScreen: () => void;
 };
 
 const LoginScreen: React.FC<Props> = ({
   onPress,
   onLoginSuccess,
   setOgPassword,
+  showForgotPasswordScreen,
 }) => {
   const [val, setVal] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -46,7 +47,9 @@ const LoginScreen: React.FC<Props> = ({
     setOgPassword(text);
   };
 
-  const onForgotPress = () => {};
+  const onForgotPress = () => {
+    showForgotPasswordScreen();
+  };
 
   const handleValueChange = (value: string) => {
     // Regular expression pattern to check if the entered value is an email

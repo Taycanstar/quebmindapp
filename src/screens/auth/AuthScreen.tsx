@@ -16,9 +16,12 @@ import {googleLogo} from '../../utils/images/ImageAssets';
 import Zocial from 'react-native-vector-icons/Zocial';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LoginScreen from './LoginScreen';
+import ForgotPasswordScreen from './ForgotPasswordScreen';
 import AddPersonalDetailsScreen from './AddPersonalDetailsScreen';
 import VerifyPhScreen from './VerifyPhScreen';
 import EnterCodeScreen from './EnterCodeScreen';
+import EnterOtpScreen from './EnterOtpScreen';
+import ResetPasswordScreen from './ResetPasswordScreen';
 
 export type Props = {};
 interface User {
@@ -29,10 +32,15 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
   const [isLoginVisible, setIsLoginVisible] = useState<boolean>(false);
   const [isPdVisible, setIsPdVisible] = useState<boolean>(false);
   const [isPhVisible, setIsPhVisible] = useState<boolean>(false);
+  const [isForgotVisible, setIsForgotVisible] = useState<boolean>(false);
   const [isCodeVisible, setIsCodeVisible] = useState<boolean>(false);
+  const [isOtpVisible, setIsOtpVisible] = useState<boolean>(false);
+  const [isResetVisible, setIsResetVisible] = useState<boolean>(false);
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [ogPassword, setOgPassword] = useState<string>('');
+  const [loggedOutUser, setLoggedOutUser] = useState<User | null>(null);
+  const [loggedOutEmail, setLoggedOutEmail] = useState<string>('');
 
   const handleVerify = (phoneNumber: string) => {
     setPhoneNumber(phoneNumber);
@@ -51,6 +59,11 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
     }
   };
 
+  const handleForgotPassword = () => {
+    setIsLoginVisible(false);
+    setIsForgotVisible(true);
+  };
+
   const handlePdScreenNext = () => {
     setIsPdVisible(false);
     setIsPhVisible(true); // Open VerifyPhScreen modal
@@ -59,6 +72,25 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
   const handlePhScreenNext = () => {
     setIsPhVisible(false);
     setIsCodeVisible(true); // Open EnterCodeScreen modal
+  };
+
+  const handleOnForgotSuccess = (user: User, email: string) => {
+    setIsForgotVisible(false);
+    setIsOtpVisible(true);
+    setLoggedInUser(user);
+    setLoggedOutEmail(email);
+  };
+
+  const handleOnOtpNext = () => {
+    setIsOtpVisible(false);
+    setIsResetVisible(true);
+  };
+
+  const handleOnResetNext = () => {
+    setIsResetVisible(false);
+    setTimeout(() => {
+      setIsLoginVisible(true);
+    }, 5000);
   };
 
   return (
@@ -99,6 +131,7 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
             style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <LoginScreen
+                showForgotPasswordScreen={handleForgotPassword}
                 onLoginSuccess={handleLoginSuccess}
                 onPress={() => setIsLoginVisible(false)}
                 setOgPassword={setOgPassword}
@@ -163,6 +196,67 @@ const AuthScreen: React.FC<Props> = (Props: Props) => {
                 user={loggedInUser}
                 ogPassword={ogPassword}
                 onBackPress={() => setIsCodeVisible(false)}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setIsForgotVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isForgotVisible}
+          onRequestClose={() => setIsForgotVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <ForgotPasswordScreen
+                bgColor="black"
+                textColor="white"
+                inputBgColor={Colors.darkInputBg}
+                user={loggedInUser}
+                onForgotSuccess={handleOnForgotSuccess}
+                onBackPress={() => setIsForgotVisible(false)}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setIsOtpVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isOtpVisible}
+          onRequestClose={() => setIsOtpVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <EnterOtpScreen
+                email={loggedOutEmail}
+                bgColor="black"
+                textColor="white"
+                inputBgColor={Colors.darkInputBg}
+                user={loggedOutUser}
+                onNext={handleOnOtpNext}
+                onBackPress={() => setIsOtpVisible(false)}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setIsResetVisible(false)}>
+        <Modal
+          animationType={'slide'}
+          transparent={true}
+          visible={isResetVisible}
+          onRequestClose={() => setIsResetVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <ResetPasswordScreen
+                bgColor="black"
+                textColor="white"
+                inputBgColor={Colors.darkInputBg}
+                user={loggedOutUser}
+                onResetSuccess={handleOnResetNext}
+                onBackPress={() => setIsResetVisible(false)}
               />
             </View>
           </TouchableOpacity>

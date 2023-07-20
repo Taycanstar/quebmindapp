@@ -234,13 +234,79 @@ export const confirmPhoneNumber = createAsyncThunk(
   },
 );
 
+export const forgotPassword = createAsyncThunk(
+  'user/forgotPassword',
+  async (email: string, {rejectWithValue}) => {
+    try {
+      const response = await api.post('/u/forgot-password', {email});
+      console.log(response);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
+    }
+  },
+);
+export const confirmOtp = createAsyncThunk(
+  'user/confirmOtp',
+  async (
+    data: {confirmationToken: string; email: string},
+    {rejectWithValue},
+  ) => {
+    try {
+      const response = await api.post('/u/confirm-otp', data);
+      console.log(response);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
+    }
+  },
+);
+export const resendOtp = createAsyncThunk(
+  'user/resendOtp',
+  async (email: string, {rejectWithValue}) => {
+    try {
+      const response = await api.post('/u/resend-otp', {email});
+      console.log(response);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
+    }
+  },
+);
 export const resendCode = createAsyncThunk(
   'user/resendCode',
   async (phoneNumber: string, {rejectWithValue}) => {
     try {
       const response = await api.post('/u/resend-code', {phoneNumber});
+      console.log(response);
       return response.data;
     } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
+    }
+  },
+);
+
+export const changePassword = createAsyncThunk(
+  'user/changePassword',
+  async (data: {password: string; id: string}, {rejectWithValue}) => {
+    try {
+      const response = await api.post(`/u/change-password/${data.id}`, data);
+      console.log(response);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
       return rejectWithValue(
         error.response ? error.response.data : error.message,
       );
@@ -355,6 +421,50 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(resendCode.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.payload;
+      })
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        // Handle success
+        console.log(action.payload, '<= Fulfilled payload');
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        console.log(action.payload, '<= Rejected error');
+        state.status = 'error';
+        state.error = action.payload;
+      })
+      .addCase(confirmOtp.fulfilled, (state, action) => {
+        // Handle success
+        console.log(action.payload, '<= Fulfilled payload');
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(confirmOtp.rejected, (state, action) => {
+        console.log(action.payload, '<= Rejected error');
+        state.status = 'error';
+        state.error = action.payload;
+      })
+      .addCase(resendOtp.fulfilled, (state, action) => {
+        // Handle success
+        console.log(action.payload, '<= Fulfilled payload');
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(resendOtp.rejected, (state, action) => {
+        console.log(action.payload, '<= Rejected error');
+        state.status = 'error';
+        state.error = action.payload;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        // Handle success
+        console.log(action.payload, '<= Fulfilled payload');
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        console.log(action.payload, '<= Rejected error');
         state.status = 'error';
         state.error = action.payload;
       });
